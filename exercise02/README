@@ -1,0 +1,12 @@
+Usage
+======
+
+xyz2zm reads the standard input and writes the result to standard output.
+
+    $ ./xyz2zm < INPUT > OUTPUT
+
+Example
+------
+
+    $ ./xyz2zm < ../exercise01/result/xyz.dat > result/zm.dat
+

@@ -1,0 +1,9 @@
+# Usage
+
+zm2xyz reads the standard input and write result to standard output
+
+$ ./zm2xyz < INPUT > OUTPUT
+
+# example
+
+$ ./zm2xyz < zmatrix_in.dat > xyz.dat

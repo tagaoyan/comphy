@@ -1,0 +1,7 @@
+Usage
+======
+
+makerandomcoil reads the standard input and writes the Z-matrix result to
+standard output, XYZ result to standard error.
+
+    $ ./makerandomcoil < INPUT > OUTPUT_ZM 2> OUTPUT_XYZ

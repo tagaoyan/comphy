@@ -1,0 +1,35 @@
+###############################################################################
+#  This input file speficies a molecule and its geometry in the form of 
+#  a Z-matrix, namely, bond lengths, bond angles, and torsional angles.
+###############################################################################
+#  Format description:
+#	1. Lines begin with a # sign is a comment line;
+#	2. Other lines are data lines, each  comprises multiple fields 
+#   	   separated by whitespace(s); the meaning of each feild is
+#          defined by the data definition comment lines;
+#	3. In a data definition comment line, each item 
+#          defines a coppresonding field in subsequent 
+#          one or more data lines. A data definition line may be continued 
+#          by "..." at the end of line.
+###############################################################################
+# Start data definitions and data 
+# integer_id_of_atom_1  name_of_atom_1...
+# x_coord_atom_1  y_coord_atom_1 z_coord_atom_1
+ 1  A1  0.0  0.0  0.0
+# integer_id_of_atom  name_of_atom integer_id_of_bond_atom bond_length...
+#   integer_id_of_bond_angle_atom bond_angle  
+ 2  A2  1  1.5
+# integer_id_of_atom  name_of_atom integer_id_of_bond_atom bond_length...
+#   integer_id_of_bond_angle_atom bond_angle  
+ 3 A3  2  1.5  1  109.5
+# integer_id_of_atom  name_of_atom integer_id_of_bond_atom bond_length...
+#   integer_id_of_bond_angle_atom bond_angle ...
+#   integer_id_of_torsion_angle_atom torsion_angle
+ 4 A4 3 1.5 2  109.5  1 180.0
+ 5 A5 4 1.5 3  109.5  2  60.0
+ 6 A6 5 1.5 4  109.5  3 180.0
+ 7 A7 6 1.5 5  109.5  4 -60.0
+ 8 A8 7 1.5 6  109.5  5 180.0
+ 9 A9 8 1.5 7  109.5  6  60.0
+10 A10 9 1.5 8  109.5  7 180.0
+#end of data

@@ -1,0 +1,36 @@
+CC = gcc
+CFLAGS = -Wall -g -I../include
+
+.PHONY: all
+
+all: result
+
+result:
+	mkdir -p result
+
+obj/%.o: src/%.c
+	@mkdir -p obj
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+obj/%.o: ../shared_src/%.o
+	mkdir -p obj
+	cp $^ obj
+
+bin/%: obj/%.o
+	mkdir -p bin
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+
+Makefile.in: src/*.c
+	gcc -I../include -MM src/*.c > Makefile.in
+
+include Makefile.in
+
+.PHONY: clean clean-all
+
+clean:
+	rm -rf obj
+	rm -f Makefile.in
+
+clean-all: clean
+	rm -rf bin
+	rm -rf result

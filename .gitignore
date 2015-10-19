@@ -1,0 +1,7 @@
+test/
+pool/
+**/bin/
+**/obj/
+**/result/
+**/Makefile.in
+*.o
