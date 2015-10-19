@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g -I../include
+CFLAGS = -Wall -g -I../include -std=gnu11
 
 .PHONY: all
 
