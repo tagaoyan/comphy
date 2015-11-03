@@ -1,0 +1,13 @@
+# bond-length(b)  bond-angle(theta) kBT  torsional-force-constant(k_phi)
+ 1.5   109.5   1.0 2.0
+# sample L conformers use uniform or Boltzmann sampling. L is the sample size. 
+# calculate thermodynamics properties use the sample set.
+# Repeat the calculateion M times. Use respetcive averages and
+# standard deviations to estimation ensemble averages and error ranges.   
+# Carry out the above calculations for the following sample sizes.
+# Observe how the averages and error ranges converge with sample sizes.
+# number-of-conformers-to-sample(L)    number-of-repetitions(M)
+ 100  5
+ 400  5
+ 800  5
+1600  5
