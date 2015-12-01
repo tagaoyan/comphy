@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <math.h>
 
 // A data structure representing simulating requirements
 typedef struct {
@@ -16,10 +18,18 @@ typedef struct {
     int *repeats;
 } phisample;
 
+// functions that is independent from sample distributions
+double energy_function(double kphi, double phi);
+double free_energy(double z, double kbt);
+double entrophy(double u, double fe, double kbt);
+
+// read requirements from file
 phisample *read_phisample(FILE *f);
 
+// print data of the sample
 void print_data(phisample *samp);
 
+// print header of the sample
 void print_info_phisample();
 
 #endif

@@ -1,18 +1,21 @@
-#include "phisample.c"
-
-// A data structure representing simulating requirements
-typedef struct {
-    double kbt;
-    double kphi;
-    double bondlength;
-    double bondangle;
-    size_t length;
-    size_t capacity;
-    int *samples;
-    int *repeats;
-} phisample;
+#include "phisample.h"
 
 #define BUF_SIZE 4096
+
+double energy_function(double kphi, double phi) {
+    return 0.5 * kphi * (1 + cos(3 * phi));
+}
+
+double free_energy(double z, double kbt) {
+    // calculate free energy from partation function
+    return -kbt * log(z);
+}
+
+double entrophy(double u, double fe, double kbt) {
+    // calculate entrophy from internal energy and free energy
+    return (u - fe) / kbt;
+}
+
 phisample *read_phisample(FILE *f) {
     // read simulation requirements from file
     char buf[BUF_SIZE];
