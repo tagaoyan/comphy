@@ -11,3 +11,6 @@ ex03:
 
 ex04:
 	cd exercise04 && make
+
+ex05:
+	cd exercise05 && make
