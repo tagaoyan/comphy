@@ -1,0 +1,17 @@
+#chain-length
+ 20
+# bond-length(b)  bond-angle(theta) kBT  torsional-force-constant(k_phi)
+ 1.5   109.5   1.0 2.0
+#soft van der Waals parameters
+# epsinon  sigma  alpha
+ 0.1        3.0  0.9
+# sample L conformers for the polymer with IRS sampling. L is the sample size. 
+# calculate thermodynamics properties use the sample set.
+# Repeat the calculateion M times. Use respetcive averages and
+# standard deviations to estimation ensemble averages and error ranges.   
+# Carry out the above calculations for the following sample sizes.
+# Observe how the averages and error ranges converge with sample sizes.
+# number-of-conformers-to-sample(L)    number-of-repetitions(M)
+ 10000  5
+ 50000 5
+100000 5
