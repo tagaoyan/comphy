@@ -6,13 +6,13 @@
 #include "phisample.h"
 
 
-void sample_bz(double *a, int n, double kphi, gsl_rng *rng, gsl_rng *rng2) {
+void sample_bz(double *a, int n, double kphi, double kbt, gsl_rng *rng, gsl_rng *rng2) {
     // get n samples that follows Boltzmann distribution
     for (int i = 0; i < n; i++) {
         for (; ;) {
             double x = gsl_rng_uniform(rng) * 2 * M_PI - M_PI;
             double t = gsl_rng_uniform(rng2);
-            if (t < exp(- energy_function(kphi, x))) {
+            if (t < exp(- energy_function(kphi, x) / kbt)) {
                 a[i] = x;
                 break;
             }
@@ -48,7 +48,7 @@ void run_phisample_bz(phisample *samp, gsl_rng *rng, gsl_rng *rng2) {
         double en[r], ent[r], fe[r]; // internal energy, entrophy, free energy
         for (int j = 0; j < r; j++) {
             double s[n]; // samples
-            sample_bz(s, n, kphi, rng, rng2);
+            sample_bz(s, n, kphi, kbt, rng, rng2);
             double z = partation_bz(s, n, kphi, kbt);
             fe[j] = free_energy(z, kbt);
             en[j] = energy_bz(s, n, kphi);
