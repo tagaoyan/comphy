@@ -6,6 +6,7 @@ chain_xyz* new_chain_xyz(size_t capacity) {
     chx->capacity = capacity;
     chx->length = 0;
     chx->atomnames = malloc(sizeof(char *) * (capacity + 1));
+    chx->atomnames[0] = NULL;
     chx->coordinates = malloc(sizeof(coordinate_xyz) * (capacity + 1));
     return chx;
 }

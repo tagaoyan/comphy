@@ -3,6 +3,7 @@
 chain *new_chain(size_t capacity) {
     chain *ch = malloc(sizeof(chain));
     ch->atomnames = malloc(sizeof(char *) * (capacity + 1));
+    ch->atomnames[0] = NULL;
     ch->bondlengths = malloc(sizeof(double) * (capacity + 1));
     ch->bondangles = malloc(sizeof(double) * (capacity + 1));
     ch->torsionangles = malloc(sizeof(double) * (capacity + 1));
