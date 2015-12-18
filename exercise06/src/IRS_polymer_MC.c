@@ -9,7 +9,8 @@
 #include "phisample.h"
 
 double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
-    chain_xyz *chx = new_chain_xyz(ch->length);
+    chain_xyz *chx;
+    chx = new_chain_xyz(ch->length);
     chain_xyz_from_zm(chx, ch);
     double evdw = 0;
     for (int i = 1; i <= ch->length; i++) {
@@ -22,6 +23,7 @@ double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
             }
         }
     }
+    printf("vdw = %f\n", evdw);
     free_chain_xyz(chx);
     return evdw;
 }
@@ -36,12 +38,14 @@ double energy_tors(chain *ch, double kphi) {
 
 void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double kphi, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
     for (int i = 0; i < n; i++) {
+        chain *ch;
         for (;;) {
-            chain *ch = randomcoil(b, th, len, rng1);
+            ch = randomcoil(b, th, len, rng1);
             double t = exp(-energy_tors(ch, kphi) / kbt);
-            double x = gsl_rng_uniform(rng2);
+            double x = gsl_rng_uniform(rng2) / 1000;
             if (x < t) {
                 chs[i] = ch;
+                break;
             } else {
                 free_chain(ch);
             }
@@ -148,28 +152,49 @@ polymer_sample *read_polymer_sample(FILE *f) {
     return samp;
 }
 
-void run_polymer_sample_irs(polymer_sample *samp, gsl_rng rng1, gsl_rng rng2) {
+void run_polymer_sample_irs(polymer_sample *samp, gsl_rng *rng1, gsl_rng *rng2) {
     for (int i = 0; i < samp->length; i++) {
         int n = samp->samples[i];
         int r = samp->repeats[i];
         double en[r], ent[r], fe[r]; // internal energy, entrophy, free energy
         for (int j = 0; j < r; j++) {
-            double s[n]; // samples
-            sample_bz(s, n, kphi, rng, rng2);
-            double z = partation_bz(s, n, kphi, kbt);
-            fe[j] = free_energy(z, kbt);
-            en[j] = energy_bz(s, n, kphi);
-            ent[j] = entrophy(en[j], fe[j], kbt);
+            chain *s[n]; // samples
+            sample_irs(s, n,
+                    samp->bondlength,
+                    samp->bondangle,
+                    samp->chainlength,
+                    samp->kphi,
+                    samp->kbt,
+                    rng1,
+                    rng2
+                    );
+            partation_and_energy zu = partation_and_energy_irs(s, n,
+                    samp->epsilon,
+                    samp->alpha,
+                    samp->sigma,
+                    samp->kphi,
+                    samp->kbt
+                    );
+            double z = zu.partation;
+            en[j] = zu.energy;
+            fe[j] = free_energy(z, samp->kbt);
+            ent[j] = entrophy(en[j], fe[j], samp->kbt);
         }
         printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
-                mean(en, r), meansq(en, r),
+                mean(en, r), stddev(en, r),
                 mean(fe, r), stddev(fe, r),
                 mean(ent, r), stddev(ent, r));
     }
 }
 
 int main() {
-    polymer_sample *sp = read_polymer_sample(stdin);
-    run_polymer_sample_irs(sp);
+    polymer_sample *samp = read_polymer_sample(stdin);
+    gsl_rng *rng1 = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng *rng2 = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng1, time(NULL));
+    gsl_rng_set(rng2, time(NULL) / 2);
+    run_polymer_sample_irs(samp, rng1, rng2);
+    gsl_rng_free(rng1);
+    gsl_rng_free(rng2);
     return 0;
 }
