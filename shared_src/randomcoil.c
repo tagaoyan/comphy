@@ -1,14 +1,14 @@
 #include "randomcoil.h"
 
-#define NAME_SIZE 32
+#define NAME_SIZE 8
 chain *randomcoil(double blength, double bangle, size_t length, gsl_rng *rng) {
     // create a coil, torsion angle is random
     // a GSL random number generator (gsl_rng) is required to generate random numbers
     // the result returned should be freed by free_chain().
     chain *ch = new_chain(length);
-    for (int i = 1; i <= length; i++) {
+    for (int i = 0; i < length; i++) {
         char name[NAME_SIZE];
-        snprintf(name, NAME_SIZE, "A%d", i);
+        snprintf(name, NAME_SIZE, "A%d", i + 1);
         chain_add(ch, name, blength, bangle, gsl_rng_uniform(rng) * 360. - 180.);
     }
     return ch;

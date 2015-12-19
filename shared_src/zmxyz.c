@@ -46,17 +46,17 @@ static coordinate_xyz zm2xyz_n(
 }
 
 void chain_xyz_from_zm(chain_xyz *chx, chain *ch) {
-    for (int i = 1; i <= ch->length; i++) {
+    for (int i = 0; i < ch->length; i++) {
         coordinate_xyz p;
         switch (i) {
-            case 1:
+            case 0:
                 p = zm2xyz_1(ch->begin);
                 break;
-            case 2:
-                p = zm2xyz_2(chx->coordinates[1], ch->bondlengths[2]);
+            case 1:
+                p = zm2xyz_2(chx->coordinates[0], ch->bondlengths[1]);
                 break;
-            case 3:
-                p = zm2xyz_3(chx->coordinates[2], ch->bondlengths[3], ch->bondangles[3]);
+            case 2:
+                p = zm2xyz_3(chx->coordinates[1], ch->bondlengths[2], ch->bondangles[2]);
                 break;
             default:
                 p = zm2xyz_n(

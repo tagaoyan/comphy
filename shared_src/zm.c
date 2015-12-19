@@ -2,18 +2,17 @@
 
 chain *new_chain(size_t capacity) {
     chain *ch = malloc(sizeof(chain));
-    ch->atomnames = malloc(sizeof(char *) * (capacity + 1));
-    ch->atomnames[0] = NULL;
-    ch->bondlengths = malloc(sizeof(double) * (capacity + 1));
-    ch->bondangles = malloc(sizeof(double) * (capacity + 1));
-    ch->torsionangles = malloc(sizeof(double) * (capacity + 1));
+    ch->atomnames = malloc(sizeof(char *) * capacity);
+    ch->bondlengths = malloc(sizeof(double) * capacity);
+    ch->bondangles = malloc(sizeof(double) * capacity);
+    ch->torsionangles = malloc(sizeof(double) * capacity);
     ch->capacity = capacity;
     ch->length = 0;
     return ch;
 }
 
 void free_chain(chain *ch) {
-    for (int i = 0; i <= ch->capacity; i++) {
+    for (int i = 0; i < ch->capacity; i++) {
         free(ch->atomnames[i]);
     }
     free(ch->atomnames);
@@ -27,14 +26,14 @@ void free_chain(chain *ch) {
 void chain_add(chain *ch, char *aname, double blength, double bangle, double tangle) {
     // add an atom to the end of the chain,
     // some parameters will be ignored if the chain is too short
-    int index = ch->length + 1;
-    if (index > ch->capacity) {
+    int index = ch->length;
+    if (index >= ch->capacity) {
         // double the capacity
         ch->capacity *= 2;
-        ch->atomnames = realloc(ch->atomnames, sizeof(char *) * (ch->capacity + 1));
-        ch->bondlengths = realloc(ch->bondlengths, sizeof(double) * (ch->capacity + 1));
-        ch->bondangles = realloc(ch->bondangles, sizeof(double) * (ch->capacity + 1));
-        ch->torsionangles = realloc(ch->torsionangles, sizeof(double) * (ch->capacity + 1));
+        ch->atomnames = realloc(ch->atomnames, sizeof(char *) * ch->capacity);
+        ch->bondlengths = realloc(ch->bondlengths, sizeof(double) * ch->capacity);
+        ch->bondangles = realloc(ch->bondangles, sizeof(double) * ch->capacity);
+        ch->torsionangles = realloc(ch->torsionangles, sizeof(double) * ch->capacity);
     }
     ch->atomnames[index] = strdup(aname);
     ch->bondlengths[index] = blength;
@@ -71,33 +70,33 @@ void read_chain(chain *ch, FILE *f) {
 }
 
 void print_chain(chain *ch, FILE *f) {
-    for (int i = 1; i <= ch->length; i++) {
+    for (int i = 0; i < ch->length; i++) {
         switch(i) {
-            case 1:
+            case 0:
                 fprintf(f, "%d %s\t%f %f %f\n",
-                        1, ch->atomnames[1],
+                        1, ch->atomnames[0],
                         ch->begin.x, ch->begin.y, ch->begin.z
                         );
                 break;
-            case 2:
+            case 1:
                 fprintf(f, "%d %s\t%d %f\n",
-                        i, ch->atomnames[i],
-                        i - 1, ch->bondlengths[i]
+                        2, ch->atomnames[1],
+                        1, ch->bondlengths[1]
                         );
                 break;
-            case 3:
+            case 2:
                 fprintf(f, "%d %s\t%d %f\t%d %f\n",
-                        i, ch->atomnames[i],
-                        i - 1, ch->bondlengths[i],
-                        i - 2, ch->bondangles[i]
+                        3, ch->atomnames[2],
+                        2, ch->bondlengths[2],
+                        1, ch->bondangles[2]
                         );
                 break;
             default:
                 fprintf(f, "%d %s\t%d %f\t%d %f\t%d %f\n",
-                        i, ch->atomnames[i],
-                        i - 1, ch->bondlengths[i],
-                        i - 2, ch->bondangles[i],
-                        i - 3, ch->torsionangles[i]
+                        i + 1, ch->atomnames[i],
+                        i, ch->bondlengths[i],
+                        i - 1, ch->bondangles[i],
+                        i - 2, ch->torsionangles[i]
                         );
                 break;
         }

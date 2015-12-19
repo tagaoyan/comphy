@@ -35,25 +35,25 @@ static double torsionangle(
 }
 
 void chain_zm_from_xyz(chain *ch, chain_xyz *chx) {
-    for (int i = 1; i <= chx->length; i++) {
+    for (int i = 0; i < chx->length; i++) {
         double blength = 0, bangle = 0, tangle = 0;
-        if (i == 1) {
+        if (i == 0) {
             ch->begin = chx->coordinates[i];
         }
-        if (i >= 2) {
+        if (i >= 1) {
             blength = bondlength(
                     chx->coordinates[i - 1],
                     chx->coordinates[i]
                     );
         }
-        if (i >= 3) {
+        if (i >= 2) {
             bangle = bondangle(
                     chx->coordinates[i - 2],
                     chx->coordinates[i - 1],
                     chx->coordinates[i]
                     );
         }
-        if (i >= 4) {
+        if (i >= 3) {
             tangle = torsionangle(
                     chx->coordinates[i - 3],
                     chx->coordinates[i - 2],
