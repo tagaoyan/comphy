@@ -4,6 +4,7 @@
 
 #include "statistics.h"
 #include "phisample.h"
+#include "thermo.h"
 
 
 void sample_bz(double *a, int n, double kphi, double kbt, gsl_rng *rng, gsl_rng *rng2) {

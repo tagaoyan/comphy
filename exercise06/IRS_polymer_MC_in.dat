@@ -12,6 +12,7 @@
 # Carry out the above calculations for the following sample sizes.
 # Observe how the averages and error ranges converge with sample sizes.
 # number-of-conformers-to-sample(L)    number-of-repetitions(M)
+     10  5
  10000  5
  50000 5
 100000 5

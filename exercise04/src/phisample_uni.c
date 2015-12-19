@@ -4,7 +4,7 @@
 
 #include "phisample.h"
 #include "statistics.h"
-
+#include "thermo.h"
 
 void sample(double *a, int n, gsl_rng *rng) {
     // uniformly sample n phi angle to a

@@ -18,11 +18,6 @@ typedef struct {
     int *repeats;
 } phisample;
 
-// functions that is independent from sample distributions
-double energy_function(double kphi, double phi);
-double free_energy(double z, double kbt);
-double entrophy(double u, double fe, double kbt);
-
 // read requirements from file
 phisample *read_phisample(FILE *f);
 

@@ -4,6 +4,7 @@
 #include "zmxyz.h"
 #include "randomcoil.h"
 #include "statistics.h"
+#include "thermo.h"
 #include <gsl/gsl_rng.h>
 
 #include "phisample.h"
@@ -23,7 +24,6 @@ double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
             }
         }
     }
-    printf("vdw = %f\n", evdw);
     free_chain_xyz(chx);
     return evdw;
 }
@@ -42,15 +42,17 @@ void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double k
         for (;;) {
             ch = randomcoil(b, th, len, rng1);
             double t = exp(-energy_tors(ch, kphi) / kbt);
-            double x = gsl_rng_uniform(rng2) / 1000;
+            double x = gsl_rng_uniform(rng2) / 10000;
             if (x < t) {
                 chs[i] = ch;
+                fprintf(stderr, "\rgot %6d sample(s)", i + 1);
                 break;
             } else {
                 free_chain(ch);
             }
         }
     }
+    fputs("\n", stderr);
 }
 
 // calculate them together to avoid redundant calculation
@@ -179,6 +181,9 @@ void run_polymer_sample_irs(polymer_sample *samp, gsl_rng *rng1, gsl_rng *rng2) 
             en[j] = zu.energy;
             fe[j] = free_energy(z, samp->kbt);
             ent[j] = entrophy(en[j], fe[j], samp->kbt);
+            for (int k = 0; k < n; k++) {
+                free_chain(s[k]);
+            }
         }
         printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
                 mean(en, r), stddev(en, r),
