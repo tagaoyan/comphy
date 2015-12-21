@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -g -I../include -std=gnu11
+CFLAGS = -Wall -g -I../include -I../local/include -std=gnu11
+LDFLAGS = -L../local/lib
 
 .PHONY: all
 

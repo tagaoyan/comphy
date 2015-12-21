@@ -14,3 +14,26 @@ Run
 ----
 
 Follow the instructions in the README file in separate directories.
+
+You can also run
+
+    $ make run
+
+in every exercise directory to invoke the tasks specified in instructions
+
+Shared Sources
+---------------
+
+Shared functions are defined in `include/*.h` and implemented in
+`shared_src/*.c`.
+
+- `zm`: deal with chains in z-matrix
+- `xyz`: deal with chains in xyz coordinate
+- `zmxyz`: convert z-matrix to xyz
+- `xyzzm`: convert xyz to z-matrix
+- `xyzbase`: basic calculation for coordinated and vectors
+- `randomcoil`: generate random chains
+- `phisample`: doing four-atom torsional angle sample
+- `thermo`: calculate thermodynamic functions from partation function and
+  internal energy
+- `statistics`: statistics

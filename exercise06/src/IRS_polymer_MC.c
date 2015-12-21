@@ -39,15 +39,17 @@ double energy_tors(chain *ch, double kphi) {
 void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double kphi, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
     for (int i = 0; i < n; i++) {
         chain *ch;
+        int drop = 0;
         for (;;) {
             ch = randomcoil(b, th, len, rng1);
             double t = exp(-energy_tors(ch, kphi) / kbt);
-            double x = gsl_rng_uniform(rng2) / 1000;
+            double x = gsl_rng_uniform(rng2);
             if (x < t) {
                 chs[i] = ch;
-                fprintf(stderr, "\rgot %6d sample(s)", i + 1);
+                //fprintf(stderr, "\rgot %6d sample(s), droped %8d.", i + 1, drop);
                 break;
             } else {
+                drop++;
                 free_chain(ch);
             }
         }
@@ -154,7 +156,37 @@ polymer_sample *read_polymer_sample(FILE *f) {
     return samp;
 }
 
+void print_data_polymer(polymer_sample *samp) {
+    printf("# %s: %d\n", "chain length", samp->chainlength);
+    printf("# %s: %g\n", "bond length", samp->bondlength);
+    printf("# %s: %g\n", "bond angle", samp->bondangle);
+    printf("# %s: %g\n", "kbt", samp->kbt);
+    printf("# %s: %g\n", "kphi", samp->kphi);
+    puts("# vdw info");
+    printf("# %s: %g\n", "epsilon", samp->epsilon);
+    printf("# %s: %g\n", "sigma", samp->sigma);
+    printf("# %s: %g\n", "alpha", samp->alpha);
+}
+
+void print_info_polymer() {
+    puts("# Result of polymer sample");
+    char dstr[32];
+    time_t t;
+    struct tm tmp;
+    t = time(NULL);
+    localtime_r(&t, &tmp);
+    strftime(dstr, 32, "%F %T", &tmp);
+    printf("# %s\n", dstr);
+    puts("# Format: There are 8 columns in one line. Comment lines begin with #");
+    puts("# 1.<number of repeats> 2.<number of samples>");
+    puts("# 3.<internal energy> 4.<error of internal energy_function> (kb * 1K)");
+    puts("# 5.<free energy> 6.<error of free energy> (kb * 1K)");
+    puts("# 7.<entrophy> 8.<error of entrophy> (kb)");
+}
+
 void run_polymer_sample_irs(polymer_sample *samp, gsl_rng *rng1, gsl_rng *rng2) {
+    print_info_polymer();
+    print_data_polymer(samp);
     for (int i = 0; i < samp->length; i++) {
         int n = samp->samples[i];
         int r = samp->repeats[i];
