@@ -6,8 +6,7 @@
 #include "statistics.h"
 #include "thermo.h"
 #include <gsl/gsl_rng.h>
-
-#include "phisample.h"
+#include <time.h>
 
 double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
     chain_xyz *chx;
