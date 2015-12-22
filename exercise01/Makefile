@@ -7,3 +7,6 @@ LDLIBS = -lm
 target = bin/zm2xyz
 
 bin/zm2xyz: obj/zm2xyz.o obj/zm.o obj/xyz.o obj/xyzbase.o obj/zmxyz.o
+
+run: bin/zm2xyz
+	./bin/zm2xyz < zmatrix_in.dat > result/xyz.dat
