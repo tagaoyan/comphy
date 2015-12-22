@@ -42,6 +42,12 @@ void chain_add(chain *ch, char *aname, double blength, double bangle, double tan
     ch->length++;
 }
 
+void chain_del(chain *ch) {
+    if (ch->length > 0) {
+        ch->length--;
+    }
+}
+
 #define BUF_SIZE 4096
 #define ANAME_SIZE 8
 void read_chain(chain *ch, FILE *f) {
