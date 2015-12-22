@@ -14,8 +14,8 @@ double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
     chx = new_chain_xyz(ch->length);
     chain_xyz_from_zm(chx, ch);
     double evdw = 0;
-    for (int i = 0; i < ch->length; i++) {
-        for (int j = i + 1; j < ch->length; j++) {
+    for (int i = 4; i < ch->length; i++) {
+        for (int j = 0; j <= i - 4; j++) {
             double r = vect_length(vect_minus(chx->coordinates[i], chx->coordinates[j]));
             if (r <= alpha * sigma) {
                 evdw += 4 * epsilon * (pow(alpha, -12) - pow(alpha, -6));
@@ -28,33 +28,34 @@ double energy_vdw(chain *ch, double epsilon, double alpha, double sigma) {
     return evdw;
 }
 
+double energy_tors_single(double kphi, double phi) {
+    return 0.5 * kphi * (1 + cos(3 * phi));
+}
+
 double energy_tors(chain *ch, double kphi) {
     double et = 0;
     for (int i = 3; i < ch->length; i++) {
-        et += 0.5 * kphi * (1 + cos(3 * ch->torsionangles[i] * M_PI / 180));
+        et += energy_tors_single(kphi, ch->torsionangles[i] * M_PI / 180);
     }
     return et;
 }
 
 void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double kphi, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
     for (int i = 0; i < n; i++) {
-        chain *ch;
-        int drop = 0;
-        for (;;) {
-            ch = randomcoil(b, th, len, rng1);
-            double t = exp(-energy_tors(ch, kphi) / kbt);
-            double x = gsl_rng_uniform(rng2);
-            if (x < t) {
-                chs[i] = ch;
-                //fprintf(stderr, "\rgot %6d sample(s), droped %8d.", i + 1, drop);
-                break;
-            } else {
-                drop++;
-                free_chain(ch);
+        chain *ch = new_chain(len);
+        for (int j = 0; j < len; j++) {
+            for (;;) {
+                double phi = gsl_rng_uniform(rng1) * 2 * M_PI - M_PI;
+                double t = exp(-energy_tors_single(kphi, phi) / kbt);
+                double x = gsl_rng_uniform(rng2);
+                if (x < t) {
+                    chain_add(ch, "", b, th, phi * 180 / M_PI);
+                    break;
+                }
             }
         }
+        chs[i] = ch;
     }
-    fputs("\n", stderr);
 }
 
 // calculate them together to avoid redundant calculation
@@ -157,12 +158,15 @@ polymer_sample *read_polymer_sample(FILE *f) {
 }
 
 void print_data_polymer(polymer_sample *samp) {
+    puts("# chain parameters:");
     printf("# %s: %d\n", "chain length", samp->chainlength);
     printf("# %s: %g\n", "bond length", samp->bondlength);
     printf("# %s: %g\n", "bond angle", samp->bondangle);
+    puts("# temperature:");
     printf("# %s: %g\n", "kbt", samp->kbt);
+    puts("# torsional energy parameters:");
     printf("# %s: %g\n", "kphi", samp->kphi);
-    puts("# vdw info");
+    puts("# vdw energy parameters:");
     printf("# %s: %g\n", "epsilon", samp->epsilon);
     printf("# %s: %g\n", "sigma", samp->sigma);
     printf("# %s: %g\n", "alpha", samp->alpha);
