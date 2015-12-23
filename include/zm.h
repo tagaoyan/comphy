@@ -28,6 +28,7 @@ chain *new_chain(size_t capacity);
 void free_chain(chain *ch);
 void chain_add(chain *ch, char *aname, double blength, double bangle, double tangle);
 void chain_del(chain *ch);
+chain *chain_dup(chain *ch);
 void read_chain(chain *ch, FILE *f);
 void print_chain(chain *ch, FILE *f);
 

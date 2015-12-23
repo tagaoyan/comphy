@@ -3,6 +3,9 @@
 chain *new_chain(size_t capacity) {
     chain *ch = malloc(sizeof(chain));
     ch->atomnames = malloc(sizeof(char *) * capacity);
+    for (int i = 0; i < capacity; i++) {
+        ch->atomnames[i] = NULL;
+    }
     ch->bondlengths = malloc(sizeof(double) * capacity);
     ch->bondangles = malloc(sizeof(double) * capacity);
     ch->torsionangles = malloc(sizeof(double) * capacity);
@@ -46,6 +49,15 @@ void chain_del(chain *ch) {
     if (ch->length > 0) {
         ch->length--;
     }
+}
+
+chain *chain_dup(chain *ch) {
+    chain *chn = new_chain(ch->capacity);
+    for (int i = 0; i < ch->length; i++) {
+        chain_add(chn, ch->atomnames[i], ch->bondlengths[i], ch->bondangles[i], ch->torsionangles[i]);
+    }
+    chn->begin = ch->begin;
+    return chn;
 }
 
 #define BUF_SIZE 4096
