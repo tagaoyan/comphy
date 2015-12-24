@@ -1,4 +1,4 @@
-all: ex01 ex02 ex03 ex04 ex05 ex06
+all: ex01 ex02 ex03 ex04 ex05 ex06 ex07
 
 ex01:
 	cd exercise01 && make
@@ -17,3 +17,6 @@ ex05:
 
 ex06:
 	cd exercise06 && make
+
+ex07:
+	cd exercise07 && make

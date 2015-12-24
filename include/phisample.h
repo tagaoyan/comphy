@@ -18,6 +18,8 @@ typedef struct {
     int *repeats;
 } phisample;
 
+double energy_function(double kphi, double phi);
+
 // read requirements from file
 phisample *read_phisample(FILE *f);
 

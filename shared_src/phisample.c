@@ -2,6 +2,10 @@
 
 #define BUF_SIZE 4096
 
+double energy_function(double kphi, double phi) {
+    return 0.5 * kphi * (1 + cos(3 * phi));
+}
+
 phisample *read_phisample(FILE *f) {
     // read simulation requirements from file
     char buf[BUF_SIZE];

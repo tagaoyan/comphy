@@ -5,6 +5,7 @@
 #include "randomcoil.h"
 #include "statistics.h"
 #include "thermo.h"
+#include "polymer_sample.h"
 #include <gsl/gsl_rng.h>
 #include <time.h>
 
@@ -54,7 +55,7 @@ void polymer_sample_perm_step(chain *ch, double weight,
         double epsilon, double sigma,
         double kbt,
         int k, // length of current chain
-        chain **samp, int *cur, int n,
+        chain **chs, double *zs, double *us, int *cur, int n,
         gsl_rng *rng) {
     if (*cur >= n) {
         free_chain(ch);
@@ -64,23 +65,21 @@ void polymer_sample_perm_step(chain *ch, double weight,
     chain_add(ch, "", b, th, phi * 180 / M_PI);
     chain_xyz *chx = new_chain_xyz(k + 1);
     chain_xyz_from_zm(chx, ch);
-    double dw = exp(- (energy_tors_single(kphi, phi) + energy_vdw_single(chx, k, epsilon, sigma)));
+    double dw = exp(- (energy_tors_single(kphi, phi) + energy_vdw_single(chx, k, epsilon, sigma)) / kbt);
     free_chain_xyz(chx);
     weight *= dw;
-    //printf("step %d, %.12f\n", k, weight);
     if (k + 1 == len) {
-        samp[*cur] = ch;
-        printf("got %d polymers, %.17f\n", *cur + 1, weight);
+        chs[*cur] = ch;
+        zs[*cur] = weight;
+        us[*cur] = weight * (energy_vdw(ch, epsilon, sigma) + energy_tors(ch, kphi));
         ++*cur;
         return;
     } else {
         if (weight < w_lower) {
             if (gsl_rng_uniform(rng) < 0.5) {
-                printf("X\n");
                 free_chain(ch);
                 return;
             } else {
-                printf(">");
                 polymer_sample_perm_step(ch, 2 * weight,
                         w_lower, w_upper,
                         len, b, th,
@@ -88,12 +87,11 @@ void polymer_sample_perm_step(chain *ch, double weight,
                         epsilon, sigma,
                         kbt,
                         k + 1,
-                        samp, cur, n,
+                        chs, zs, us, cur, n,
                         rng);
             }
-        } else if (weight > w_upper) {
+        } else if (k > len - 8 && weight > w_upper) {
             chain *ch2 = chain_dup(ch);
-            printf("O");
             polymer_sample_perm_step(ch, weight / 2,
                     w_lower, w_upper,
                     len, b, th,
@@ -101,9 +99,8 @@ void polymer_sample_perm_step(chain *ch, double weight,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    samp, cur, n,
+                    chs, zs, us, cur, n,
                     rng);
-            printf("Q");
             polymer_sample_perm_step(ch2, weight / 2,
                     w_lower, w_upper,
                     len, b, th,
@@ -111,10 +108,9 @@ void polymer_sample_perm_step(chain *ch, double weight,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    samp, cur, n,
+                    chs, zs, us, cur, n,
                     rng);
         } else {
-            printf("-");
             polymer_sample_perm_step(ch, weight,
                     w_lower, w_upper,
                     len, b, th,
@@ -122,13 +118,13 @@ void polymer_sample_perm_step(chain *ch, double weight,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    samp, cur, n,
+                    chs, zs, us, cur, n,
                     rng);
         }
     }
 }
 
-void polymer_sample_perm(chain **samp, int n, // samples
+void polymer_sample_perm(chain **chs, double *zs, double *us, int n, // samples
         int len, double b, double th,
         double kphi,
         double epsilon, double sigma,
@@ -137,7 +133,6 @@ void polymer_sample_perm(chain **samp, int n, // samples
         gsl_rng *rng) {
     int cur = 0;
     while (cur < n) {
-        printf("!!! %d \n#", cur + 1);
         chain *ch = new_chain(len);
         ch->begin.x = 0;
         ch->begin.y = 0;
@@ -152,21 +147,45 @@ void polymer_sample_perm(chain **samp, int n, // samples
                 epsilon, sigma,
                 kbt,
                 3,
-                samp, &cur, n,
+                chs, zs, us, &cur, n,
                 rng);
     };
 }
 
+void run_polymer_sample_perm(polymer_sample *samp, gsl_rng *rng) {
+    print_info_polymer();
+    print_data_polymer(samp);
+    for (int i = 0; i < samp->length; i++) {
+        int n = samp->samples[i];
+        int r = samp->repeats[i];
+        double en[r], fe[r], ent[r];
+        for (int j = 0; j < r; j++) {
+            chain *chs[n];
+            double zs[n];
+            double us[n];
+            polymer_sample_perm(chs, zs, us, n,
+                    samp->chainlength, samp->bondlength, samp->bondangle,
+                    samp->kphi,
+                    samp->epsilon, samp->sigma,
+                    samp->kbt,
+                    exp(- samp->chainlength ) / 3.2, exp(- samp->chainlength) * 3.2,
+                    rng
+                    );
+            fe[j] = free_energy(mean(zs, n) * pow(2 * M_PI, samp->chainlength - 3), samp->kbt);
+            en[j] =  mean(us, n) / mean(zs, n);
+            ent[j] = entrophy(en[j], fe[j], samp->kbt);
+        }
+        printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
+                mean(en, r), stddev(en, r),
+                mean(fe, r), stddev(fe, r),
+                mean(ent, r), stddev(ent, r));
+    }
+}
+
 int main() {
-    gsl_rng *rng = gsl_rng_alloc(gsl_rng_taus);
-    gsl_rng_set(rng, 5000);
-    chain *samp[5000];
-    polymer_sample_perm(samp, 5000,
-            20, 1.5, 109.5,
-            2,
-            0.1, 3,
-            1.,
-            1e-10, 1e-7,
-            rng);
+    gsl_rng *rng = gsl_rng_alloc(gsl_rng_taus2);
+    gsl_rng_set(rng, time(NULL));
+    polymer_sample *ss = read_polymer_sample(stdin);
+    run_polymer_sample_perm(ss, rng);
     return 0;
 }
