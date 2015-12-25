@@ -88,6 +88,7 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
         zs[*cur] = weight;
         us[*cur] = weight * (energy_vdw(ch, epsilon, sigma) + energy_tors(ch, kphi));
         rg[*cur] = weight * radius_of_gyration(ch);
+        free_chain(ch);
         *efn += factor;
         ++*cur;
         return;
