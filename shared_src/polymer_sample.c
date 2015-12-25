@@ -86,3 +86,26 @@ void print_data_polymer(polymer_sample *samp) {
         printf("# %s: %g\n", "alpha", samp->alpha);
     }
 }
+
+double radius_of_gyration(chain *ch) {
+    chain_xyz *chx;
+    chx = new_chain_xyz(ch->length);
+    chain_xyz_from_zm(chx, ch);
+    double x[ch->length], y[ch->length], z[ch->length];
+    for (int i = 0; i < ch->length; i++) {
+        x[i] = chx->coordinates[i].x;
+        y[i] = chx->coordinates[i].y;
+        z[i] = chx->coordinates[i].z;
+    }
+    coordinate_xyz rm;
+    rm.x = mean(x, ch->length);
+    rm.y = mean(y, ch->length);
+    rm.z = mean(z, ch->length);
+    double rg = 0;
+    for (int i = 0; i < ch->length; i++) {
+        rg += vect_length_sq(vect_minus(rm, chx->coordinates[i]));
+    }
+    rg /= ch->length;
+    free_chain_xyz(chx);
+    return sqrt(rg);
+}

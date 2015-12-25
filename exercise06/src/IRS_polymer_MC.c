@@ -40,35 +40,6 @@ double energy_tors(chain *ch, double kphi) {
     return et;
 }
 
-double radius_of_gyration(chain *ch) {
-    chain_xyz *chx;
-    chx = new_chain_xyz(ch->length);
-    chain_xyz_from_zm(chx, ch);
-    double x[ch->length], y[ch->length], z[ch->length];
-    for (int i = 0; i < ch->length; i++) {
-        x[i] = chx->coordinates[i].x;
-        y[i] = chx->coordinates[i].y;
-        z[i] = chx->coordinates[i].z;
-    }
-    coordinate_xyz rm;
-    rm.x = mean(x, ch->length);
-    rm.y = mean(y, ch->length);
-    rm.z = mean(z, ch->length);
-    double rg = 0;
-    for (int i = 0; i < ch->length; i++) {
-        rg += vect_length_sq(vect_minus(rm, chx->coordinates[i]));
-    }
-    rg /= ch->length;
-    return sqrt(rg);
-}
-
-
-typedef struct {
-    double partation;
-    double energy;
-    double radius_of_gyration;
-} sample_result;
-
 sample_result sample_irs(size_t n, double b, double th, size_t len, double kphi, double epsilon, double alpha, double sigma, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
     double t[n]; // temp
     double w[n]; // temp
