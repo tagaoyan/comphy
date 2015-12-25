@@ -4,6 +4,10 @@ double inner_prod(coordinate_xyz a, coordinate_xyz b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+double vect_length_sq(coordinate_xyz a) {
+    return inner_prod(a, a);
+}
+
 double vect_length(coordinate_xyz a) {
     return sqrt(inner_prod(a, a));
 }
@@ -33,7 +37,11 @@ coordinate_xyz vect_plus(coordinate_xyz a, coordinate_xyz b) {
 }
 
 coordinate_xyz vect_minus(coordinate_xyz a, coordinate_xyz b) {
-    return vect_plus(a, vect_scale(b, -1));
+    coordinate_xyz p;
+    p.x = a.x - b.x;
+    p.y = a.y - b.y;
+    p.z = a.z - b.z;
+    return p;
 }
 
 coordinate_xyz cross_prod(coordinate_xyz a, coordinate_xyz b) {

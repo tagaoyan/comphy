@@ -42,11 +42,27 @@ double energy_tors(chain *ch, double kphi) {
     return et;
 }
 
-typedef struct {
-    chain *chain;
-    double weight;
-    int len;
-} perm_step;
+double radius_of_gyration(chain *ch) {
+    chain_xyz *chx;
+    chx = new_chain_xyz(ch->length);
+    chain_xyz_from_zm(chx, ch);
+    double x[ch->length], y[ch->length], z[ch->length];
+    for (int i = 0; i < ch->length; i++) {
+        x[i] = chx->coordinates[i].x;
+        y[i] = chx->coordinates[i].y;
+        z[i] = chx->coordinates[i].z;
+    }
+    coordinate_xyz rm;
+    rm.x = mean(x, ch->length);
+    rm.y = mean(y, ch->length);
+    rm.z = mean(z, ch->length);
+    double rg = 0;
+    for (int i = 0; i < ch->length; i++) {
+        rg += vect_length_sq(vect_minus(rm, chx->coordinates[i]));
+    }
+    rg /= ch->length;
+    return sqrt(rg);
+}
 
 void polymer_sample_perm_step(chain *ch, double weight, double factor,
         double w_lower, double w_upper,
@@ -55,7 +71,7 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
         double epsilon, double sigma,
         double kbt,
         int k, // length of current chain
-        chain **chs, double *zs, double *us, int *cur, int n, double *efn,
+        double *zs, double *us, double *rg, int *cur, int n, double *efn,
         gsl_rng *rng) {
     if (*cur >= n) {
         free_chain(ch);
@@ -69,9 +85,9 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
     free_chain_xyz(chx);
     weight *= dw;
     if (k + 1 == len) {
-        chs[*cur] = ch;
         zs[*cur] = weight;
         us[*cur] = weight * (energy_vdw(ch, epsilon, sigma) + energy_tors(ch, kphi));
+        rg[*cur] = weight * radius_of_gyration(ch);
         *efn += factor;
         ++*cur;
         return;
@@ -88,7 +104,7 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
                         epsilon, sigma,
                         kbt,
                         k + 1,
-                        chs, zs, us, cur, n, efn,
+                        zs, us, rg, cur, n, efn,
                         rng);
             }
         } else if (weight > w_upper) {
@@ -100,7 +116,7 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    chs, zs, us, cur, n, efn,
+                    zs, us, rg, cur, n, efn,
                     rng);
             polymer_sample_perm_step(ch2, weight / 2, factor / 2,
                     w_lower, w_upper,
@@ -109,7 +125,7 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    chs, zs, us, cur, n, efn,
+                    zs, us, rg, cur, n, efn,
                     rng);
         } else {
             polymer_sample_perm_step(ch, weight, factor,
@@ -119,20 +135,28 @@ void polymer_sample_perm_step(chain *ch, double weight, double factor,
                     epsilon, sigma,
                     kbt,
                     k + 1,
-                    chs, zs, us, cur, n, efn,
+                    zs, us, rg, cur, n, efn,
                     rng);
         }
     }
 }
 
-void polymer_sample_perm(chain **chs, double *zs, double *us, int n, // samples
+typedef struct {
+    double partation;
+    double energy;
+    double radius_of_gyration;
+} sample_result;
+
+sample_result polymer_sample_perm(int n, // samples
         int len, double b, double th,
         double kphi,
         double epsilon, double sigma,
         double kbt,
-        double w_lower, double w_upper, double *efn,
+        double w_lower, double w_upper,
         gsl_rng *rng) {
     int cur = 0;
+    double efn = 0;
+    double zs[n], us[n], rg[n];
     while (cur < n) {
         chain *ch = new_chain(len);
         ch->begin.x = 0;
@@ -148,9 +172,14 @@ void polymer_sample_perm(chain **chs, double *zs, double *us, int n, // samples
                 epsilon, sigma,
                 kbt,
                 3,
-                chs, zs, us, &cur, n, efn,
+                zs, us, rg, &cur, n, &efn,
                 rng);
     };
+    sample_result rt;
+    rt.partation = mean(zs, n) * n / efn * pow(2 * M_PI, len - 3);
+    rt.energy = mean(us, n) / mean(zs, n);
+    rt.radius_of_gyration = mean(rg, n) / mean(zs, n);
+    return rt;
 }
 
 void run_polymer_sample_perm(polymer_sample *samp, gsl_rng *rng) {
@@ -159,31 +188,26 @@ void run_polymer_sample_perm(polymer_sample *samp, gsl_rng *rng) {
     for (int i = 0; i < samp->length; i++) {
         int n = samp->samples[i];
         int r = samp->repeats[i];
-        double en[r], fe[r], ent[r], efn;
+        double en[r], fe[r], ent[r], rg[r];
         for (int j = 0; j < r; j++) {
-            chain *chs[n];
-            double zs[n];
-            double us[n];
-            efn = 0;
-            polymer_sample_perm(chs, zs, us, n,
+            sample_result rt = polymer_sample_perm(n,
                     samp->chainlength, samp->bondlength, samp->bondangle,
                     samp->kphi,
                     samp->epsilon, samp->sigma,
                     samp->kbt,
-                    exp(- samp->chainlength ) / 3.2, exp(- samp->chainlength) * 3.2, &efn,
+                    exp(-samp->chainlength * 0.75) / 10, exp(-samp->chainlength * 0.75) * 10,
                     rng
                     );
-            fe[j] = free_energy(mean(zs, n) * n / efn * pow(2 * M_PI, samp->chainlength - 3), samp->kbt);
-            en[j] =  mean(us, n) / mean(zs, n);
+            fe[j] = free_energy(rt.partation, samp->kbt);
+            en[j] = rt.energy;
             ent[j] = entrophy(en[j], fe[j], samp->kbt);
-            for (int i = 0; i < n; i++) {
-                free_chain(chs[i]);
-            }
+            rg[j] = rt.radius_of_gyration;
         }
-        printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
+        printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
                 mean(en, r), stddev(en, r),
                 mean(fe, r), stddev(fe, r),
-                mean(ent, r), stddev(ent, r));
+                mean(ent, r), stddev(ent, r),
+                mean(rg, r), stddev(rg, r));
     }
 }
 

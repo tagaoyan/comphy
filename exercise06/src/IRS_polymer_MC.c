@@ -39,7 +39,41 @@ double energy_tors(chain *ch, double kphi) {
     return et;
 }
 
-void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double kphi, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
+double radius_of_gyration(chain *ch) {
+    chain_xyz *chx;
+    chx = new_chain_xyz(ch->length);
+    chain_xyz_from_zm(chx, ch);
+    double x[ch->length], y[ch->length], z[ch->length];
+    for (int i = 0; i < ch->length; i++) {
+        x[i] = chx->coordinates[i].x;
+        y[i] = chx->coordinates[i].y;
+        z[i] = chx->coordinates[i].z;
+    }
+    coordinate_xyz rm;
+    rm.x = mean(x, ch->length);
+    rm.y = mean(y, ch->length);
+    rm.z = mean(z, ch->length);
+    double rg = 0;
+    for (int i = 0; i < ch->length; i++) {
+        rg += vect_length_sq(vect_minus(rm, chx->coordinates[i]));
+    }
+    rg /= ch->length;
+    return sqrt(rg);
+}
+
+
+typedef struct {
+    double partation;
+    double energy;
+    double radius_of_gyration;
+} sample_result;
+
+sample_result sample_irs(size_t n, double b, double th, size_t len, double kphi, double epsilon, double alpha, double sigma, double kbt, gsl_rng *rng1, gsl_rng *rng2) {
+    double t[n]; // temp
+    double w[n]; // temp
+    double vdw[n];
+    double tors[n];
+    double rg[n];
     for (int i = 0; i < n; i++) {
         chain *ch = new_chain(len);
         for (int j = 0; j < len; j++) {
@@ -53,41 +87,29 @@ void sample_irs(chain **chs, size_t n, double b, double th, size_t len, double k
                 }
             }
         }
-        chs[i] = ch;
-    }
-}
-
-// calculate them together to avoid redundant calculation
-typedef struct {
-    double partation;
-    double energy;
-} partation_and_energy;
-
-partation_and_energy partation_and_energy_irs(chain **chs, size_t n, double epsilon, double alpha, double sigma, double kphi, double kbt) {
-    double t[n];
-    double vdw[n];
-    double tors[n];
-    double z, u;
-    for (int i = 0; i < n; i++) {
-        vdw[i] = energy_vdw(chs[i], epsilon, alpha, sigma);
-        tors[i] = energy_tors(chs[i], kphi);
-    }
-    for (int i = 0; i < n; i++) {
+        vdw[i] = energy_vdw(ch, epsilon, alpha, sigma);
+        tors[i] = energy_tors(ch, kphi);
+        rg[i] = radius_of_gyration(ch);
         t[i] = exp(tors[i] / kbt);
+        free_chain(ch);
     }
-    z = pow(2 * M_PI, chs[0]->length - 3) / mean(t, n);
+    double z = pow(2 * M_PI, len - 3) / mean(t, n);
     for (int i = 0; i < n; i++) {
-        t[i] = exp(- vdw[i] / kbt);
+        w[i] = t[i] = exp(- vdw[i] / kbt);
     }
-    u = 1 / mean(t, n);
+    double u = 1 / mean(t, n);
+    double rog = u;
     z /= u;
     for (int i = 0; i < n; i++) {
-        t[i] *= (tors[i] + vdw[i]);
+        t[i] *= tors[i] + vdw[i];
+        w[i] *= rg[i];
     }
     u *= mean(t, n);
-    partation_and_energy r;
+    rog *= mean(w, n);
+    sample_result r;
     r.partation = z;
     r.energy = u;
+    r.radius_of_gyration = rog;
     return r;
 }
 
@@ -193,44 +215,38 @@ void run_polymer_sample_irs(polymer_sample *samp, gsl_rng *rng1, gsl_rng *rng2) 
     for (int i = 0; i < samp->length; i++) {
         int n = samp->samples[i];
         int r = samp->repeats[i];
-        double en[r], ent[r], fe[r]; // internal energy, entrophy, free energy
+        double en[r], ent[r], fe[r], rg[r];
         for (int j = 0; j < r; j++) {
-            chain *s[n]; // samples
-            sample_irs(s, n,
+            sample_result rt = sample_irs(n,
                     samp->bondlength,
                     samp->bondangle,
                     samp->chainlength,
                     samp->kphi,
+                    samp->epsilon,
+                    samp->alpha,
+                    samp->sigma,
                     samp->kbt,
                     rng1,
                     rng2
                     );
-            partation_and_energy zu = partation_and_energy_irs(s, n,
-                    samp->epsilon,
-                    samp->alpha,
-                    samp->sigma,
-                    samp->kphi,
-                    samp->kbt
-                    );
-            double z = zu.partation;
-            en[j] = zu.energy;
+            double z = rt.partation;
+            en[j] = rt.energy;
             fe[j] = free_energy(z, samp->kbt);
             ent[j] = entrophy(en[j], fe[j], samp->kbt);
-            for (int k = 0; k < n; k++) {
-                free_chain(s[k]);
-            }
+            rg[j] = rt.radius_of_gyration;
         }
-        printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
+        printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
                 mean(en, r), stddev(en, r),
                 mean(fe, r), stddev(fe, r),
-                mean(ent, r), stddev(ent, r));
+                mean(ent, r), stddev(ent, r),
+                mean(rg, r), stddev(rg, r));
     }
 }
 
 int main() {
     polymer_sample *samp = read_polymer_sample(stdin);
-    gsl_rng *rng1 = gsl_rng_alloc(gsl_rng_taus);
-    gsl_rng *rng2 = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng *rng1 = gsl_rng_alloc(gsl_rng_taus2);
+    gsl_rng *rng2 = gsl_rng_alloc(gsl_rng_taus2);
     gsl_rng_set(rng1, time(NULL));
     gsl_rng_set(rng2, time(NULL) / 2);
     run_polymer_sample_irs(samp, rng1, rng2);
