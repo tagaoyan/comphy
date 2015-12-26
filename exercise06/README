@@ -1,0 +1,13 @@
+IRS_polymer_MC
+==============
+
+Calculate thermodynamic properties of a chain by IRS method.
+
+## Usage
+
+    $ bin/IRS_polymer_MC < INPUT > OUTPUT
+
+## Example
+
+    $ bin/IRS_polymer_MC < IRS_polymer_MC_in.dat > result/polymer_MC_results.dat
+

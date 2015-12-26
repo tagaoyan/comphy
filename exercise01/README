@@ -1,9 +1,14 @@
-# Usage
+zm2xyz
+======
+
+Convert z-matrix to XYZ coordinates.
+
+## Usage
 
 zm2xyz reads the standard input and write result to standard output
 
 $ ./zm2xyz < INPUT > OUTPUT
 
-# example
+## Example
 
 $ ./zm2xyz < zmatrix_in.dat > xyz.dat

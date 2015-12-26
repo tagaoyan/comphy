@@ -1,0 +1,14 @@
+phisample_bz
+============
+
+Calculate thermodynamic properties of a 4-atom chain by sampling according to
+Boltzmann distribution.
+
+## Usage
+
+    $ bin/phisample_bz < INPUT > OUTPUT
+
+## Example
+
+    $ bin/phisample_bz < phisample_in.dat > result/bz_sample_results.dat
+

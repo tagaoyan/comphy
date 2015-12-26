@@ -1,0 +1,13 @@
+phisample_uni
+=============
+
+Calculate thermodynamic properties of a 4-atom chain by uniform sampling.
+
+## Usage
+
+    $ bin/phisample_uni < INPUT > OUTPUT
+
+## Example
+
+    $ bin/phisample_uni < phisample_in.dat > result/uni_sample_results.dat
+

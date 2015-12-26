@@ -1,7 +1,15 @@
-Usage
-======
+makerandomcoil
+==============
+
+generate a random chain (in torsional angles) with given bond length and bond angle.
+
+## Usage
 
 makerandomcoil reads the standard input and writes the Z-matrix result to
 standard output, XYZ result to standard error.
 
     $ ./makerandomcoil < INPUT > OUTPUT_ZM 2> OUTPUT_XYZ
+
+## Example
+
+    $ ./bin/makerandomcoil < randomcoil_in.dat > result/rc_zmatrix.dat 2> result/rc_xyz.dat

@@ -1,0 +1,11 @@
+IRS_polymer_MC
+==============
+
+Calculate thermodynamic properties of a chain by PERM.
+
+## Usage
+
+    $ bin/PERM_polymer_MC < INPUT > OUTPUT
+
+## Example
+    $ bin/PERM_polymer_MC < polymer_MC_in.dat > result/PERM_polymer_MC_results.dat
