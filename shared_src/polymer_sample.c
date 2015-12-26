@@ -62,10 +62,10 @@ void print_info_polymer() {
     localtime_r(&t, &tmp);
     strftime(dstr, 32, "%F %T", &tmp);
     printf("# %s\n", dstr);
-    puts("# Format: There are 8 columns in one line. Comment lines begin with #");
+    puts("# Format: There are 10 columns in one line. Comment lines begin with #");
     puts("# 1.<number of repeats> 2.<number of samples>");
-    puts("# 3.<internal energy> 4.<error of internal energy_function> (kb * 1K)");
-    puts("# 5.<free energy> 6.<error of free energy> (kb * 1K)");
+    puts("# 3.<free energy> 4.<error of free energy> (kb * 1K)");
+    puts("# 5.<internal energy> 6.<error of internal energy> (kb * 1K)");
     puts("# 7.<entrophy> 8.<error of entrophy> (kb)");
     puts("# 9.<radius of gyration> 10.<error of Rg> (kb)");
 }

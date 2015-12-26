@@ -112,8 +112,8 @@ void run_polymer_sample_irs(polymer_sample *samp, gsl_rng *rng1, gsl_rng *rng2) 
             rg[j] = rt.radius_of_gyration;
         }
         printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
-                mean(en, r), stddev(en, r),
                 mean(fe, r), stddev(fe, r),
+                mean(en, r), stddev(en, r),
                 mean(ent, r), stddev(ent, r),
                 mean(rg, r), stddev(rg, r));
     }

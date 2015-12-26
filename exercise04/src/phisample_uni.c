@@ -53,8 +53,8 @@ void run_phisample(phisample *samp, gsl_rng *rng) {
             ent[j] = entrophy(en[j], fe[j], kbt);
         }
         printf("%d %d %.6f %.6f %.6f %.6f %.6f %.6f\n", r, n,
-                mean(en, r), meansq(en, r),
                 mean(fe, r), stddev(fe, r),
+                mean(en, r), meansq(en, r),
                 mean(ent, r), stddev(ent, r));
     }
 }
