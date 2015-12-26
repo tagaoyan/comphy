@@ -1,4 +1,15 @@
+.PHONY: all ex01 ex02 ex03 ex04 ex05 ex06 ex07 run
+
 all: ex01 ex02 ex03 ex04 ex05 ex06 ex07
+
+run: ex01 ex02 ex03 ex04 ex05 ex06 ex07
+	cd exercise01 && make run
+	cd exercise02 && make run
+	cd exercise03 && make run
+	cd exercise04 && make run
+	cd exercise05 && make run
+	cd exercise06 && make run
+	cd exercise07 && make run
 
 ex01:
 	cd exercise01 && make
