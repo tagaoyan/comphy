@@ -7,8 +7,8 @@ Convert z-matrix to XYZ coordinates.
 
 zm2xyz reads the standard input and write result to standard output
 
-$ ./zm2xyz < INPUT > OUTPUT
+    $ ./zm2xyz < INPUT > OUTPUT
 
 ## Example
 
-$ ./zm2xyz < zmatrix_in.dat > xyz.dat
+    $ ./zm2xyz < zmatrix_in.dat > xyz.dat

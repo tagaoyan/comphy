@@ -37,3 +37,4 @@ Shared functions are defined in `include/*.h` and implemented in
 - `thermo`: calculate thermodynamic functions from partation function and
   internal energy
 - `statistics`: statistics
+- `polymer_sample`: common functions for polymer sample
